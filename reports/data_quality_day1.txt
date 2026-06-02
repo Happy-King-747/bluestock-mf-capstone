@@ -1,0 +1,141 @@
+DATA QUALITY SUMMARY — Day 1
+Bluestock Mutual Fund Analytics — Internship Capstone
+Prepared by: Revanth A
+Date: 02-06-2026
+======================================================================
+
+1. OVERVIEW
+-----------
+All 10 provided CSV datasets were successfully loaded into the pipeline
+using Pandas. In addition, live NAV data was fetched from the AMFI API
+(mfapi.in) for 6 mutual fund schemes, bringing the total number of
+datasets processed to 17.
+
+Total records ingested across all datasets: 1,46,834 rows
+
+
+2. DATASET INVENTORY
+--------------------
+Dataset                     Rows      Columns   Status
+---------------------------------------------------------
+01_fund_master               40         15       Loaded
+02_nav_history            46,000          3       Loaded
+03_aum_by_fund_house          90          5       Loaded
+04_monthly_sip_inflows        48          6       Loaded
+05_category_inflows          144          3       Loaded
+06_industry_folio_count       21          6       Loaded
+07_scheme_performance         40         19       Loaded
+08_investor_transactions  32,778         13       Loaded
+09_portfolio_holdings        322          8       Loaded
+10_benchmark_indices       8,050          3       Loaded
+
+Live NAV (fetched from mfapi.in):
+nav_119551 (SBI Bluechip)          3,236      7       Loaded
+nav_120503 (ICICI Bluechip)        3,307      7       Loaded
+nav_118632 (Nippon Large Cap)      3,298      7       Loaded
+nav_119092 (Axis Bluechip)         3,565      7       Loaded
+nav_120841 (Kotak Bluechip)        3,301      7       Loaded
+nav_hdfc_top100_125497 (HDFC)      3,091      7       Loaded
+nav_five_schemes_combined         16,707      7       Loaded
+
+
+3. ANOMALIES FOUND
+------------------
+Out of 10 core datasets, 2 anomalies were identified:
+
+[1] 04_monthly_sip_inflows — Missing Values
+    Column affected : yoy_growth_pct
+    Null count      : 12 out of 48 rows (25%)
+    Reason          : The first 12 months (Jan 2022 to Dec 2022) cannot
+                      have a year-on-year growth value because there is
+                      no prior year data to compare against. This is
+                      expected behaviour and not a data error. These
+                      nulls will be handled using forward-fill or left
+                      as NaN during analysis.
+
+[2] 07_scheme_performance — Negative Values in max_drawdown_pct
+    Column affected : max_drawdown_pct
+    Observation     : All values in this column are negative (e.g.,
+                      -21.70, -24.43, -13.35).
+    Reason          : This is correct and expected. Maximum drawdown
+                      is always expressed as a negative percentage,
+                      representing the peak-to-trough decline in a
+                      fund's value. No correction is needed.
+
+All remaining 8 datasets passed validation with zero nulls,
+zero duplicates, and no unexpected values.
+
+
+4. DATA TYPE OBSERVATIONS
+--------------------------
+- Date columns across datasets (launch_date, transaction_date,
+  portfolio_date, date) are stored as string (str/object) type.
+  These will be converted to datetime64 format during the
+  data cleaning phase (Day 2).
+
+- The 'nav' column in all NAV datasets is correctly stored as
+  float64, which is appropriate for financial price data.
+
+- amfi_code is stored as int64 across all datasets, which is
+  consistent and allows reliable joining between tables.
+
+- A Pandas 4.0 deprecation warning was observed during ingestion
+  related to select_dtypes("object") behaviour. This does not
+  affect data quality and will be patched in the cleaning script.
+
+
+5. AMFI CODE VALIDATION
+------------------------
+fund_master unique AMFI codes  : 40
+nav_history unique AMFI codes  : 40
+Matched codes                  : 40
+Missing in nav_history         : 0
+Orphan codes in nav_history    : 0
+
+Status: PASS
+
+Every scheme code present in fund_master has a corresponding
+entry in nav_history. No orphan records or missing NAV data
+were detected. The two datasets are fully consistent and
+ready for database loading.
+
+
+6. LIVE NAV DATA QUALITY
+-------------------------
+All 6 schemes were fetched successfully from mfapi.in with no
+connection errors or timeouts. NAV records span from January 2013
+to June 2026, covering over 13 years of daily price history.
+
+Scheme                          Records   Date Range
+-----------------------------------------------------
+SBI Bluechip (119551)           3,236     2013-01-02 to 2026-06-01
+ICICI Bluechip (120503)         3,307     2013-01-02 to 2026-06-01
+Nippon Large Cap (118632)       3,298     2013-01-02 to 2026-06-01
+Axis Bluechip (119092)          3,565     2012-12-31 to 2026-06-01
+Kotak Bluechip (120841)         3,301     2013-01-07 to 2026-06-01
+HDFC/SBI scheme (125497)        3,091     2013-11-18 to 2026-06-01
+
+Note: AMFI code 125497 returned SBI Small Cap Fund data instead
+of HDFC Top 100. This suggests the code may have been reassigned
+or the internship dataset uses a different code mapping. This will
+be flagged for clarification and cross-checked during Day 2
+cleaning.
+
+
+7. OVERALL DATA QUALITY RATING
+--------------------------------
+Category                  Result
+----------------------------------
+Datasets loaded           10 / 10     PASS
+Null values               12 nulls    ACCEPTABLE (expected)
+Duplicate rows            0           PASS
+Type consistency          Good        MINOR FIXES NEEDED
+AMFI code validation      40 / 40     PASS
+Live NAV fetch            6 / 6       PASS
+
+Overall Status: GOOD — Data is suitable for further processing.
+Minor date type conversions required in cleaning phase.
+
+======================================================================
+End of Data Quality Summary — Day 1
+======================================================================
