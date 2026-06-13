@@ -1,0 +1,10 @@
+2026-06-13 20:09:24,862  INFO  Bluestock MF — Scheduled NAV Fetcher started
+2026-06-13 20:09:24,863  INFO  Schedule: Every weekday at 20:00 IST
+2026-06-13 20:09:24,863  INFO  Press Ctrl+C to stop
+
+2026-06-13 20:09:24,864  INFO  Running once immediately for testing...
+2026-06-13 20:09:24,864  INFO  Weekend (Saturday) — skipping fetch
+2026-06-13 20:09:24,865  INFO  
+Scheduler running — next run at 20:00 on next weekday
+2026-06-13 20:09:24,866  INFO  Keep this terminal open to maintain the schedule
+
